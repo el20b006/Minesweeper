@@ -22,11 +22,13 @@ int main(int argc, char** argv)
 
 	// fill window
 	CreateMenu(vbox);
+	PlaceMines();
+	CreateGrid();
+	DisplayStats();
 
 	// display and run everything
 	gtk_widget_show_all(window);
 	gtk_main();
-
 
 	return 0;
 }
@@ -100,4 +102,81 @@ void CreateMenu(GtkWidget* vbox)
 	g_signal_connect(G_OBJECT(menuItem), "activate", G_CALLBACK(ShowAbout), NULL);
 
 	gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
+}
+
+void CreateGrid()
+{
+	GtkWidget* button;
+
+	// destroy and recreate grid on restart
+	if (grid)
+	{
+		gtk_widget_destroy(grid);
+	}
+
+	grid = gtk_grid_new();
+
+	// fill the grid with buttons
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < cols; j++)
+		{
+			mineButton* mine = malloc(sizeof(*mine));
+			mine->x = i;
+			mine->y = j;
+			mine->flagged = 0;
+			button = gtk_button_new();
+			mine->widget = button;
+			g_signal_connect(button, "button_press_event", G_CALLBACK(ClickField), mine);
+			gtk_grid_attach(GTK_GRID(grid), button, j, i, 1, 1);
+			helper = mine;
+		}
+	}
+
+	gtk_widget_show_all(grid);
+	gtk_box_pack_start(GTK_BOX(vbox), grid, FALSE, FALSE, 0);
+
+	// display stats at the bottom
+	if (statsLabel)
+	{
+		gtk_widget_destroy(statsLabel);
+	}
+
+	statsLabel = gtk_label_new("");
+	gtk_widget_show(statsLabel);
+	gtk_box_pack_start(GTK_BOX(vbox), statsLabel, FALSE, FALSE, 10);
+}
+
+void PlaceMines()
+{
+	// place bombs on random fields
+	srand(time(0));
+	int bombsplaced = 0;
+	while (bombsplaced < bombs)
+	{
+		int x = (rand() % (rows - 1)) + 1;
+		int y = (rand() % (cols - 1)) + 1;
+		if (field[x][y] != -1)
+		{
+			field[x][y] = -1;
+			bombsplaced++;
+
+			// increment bomb count of neighbouring fields
+			for (int m = -1; m <= 1; m++)
+			{
+				for (int n = -1; n <= 1; n++)
+				{
+					if (isInsideBounds(x + m, y + n) && field[x + m][y + n] != -1)
+					{
+						field[x + m][y + n]++;
+					}
+				}
+			}
+		}
+	}
+}
+
+int isInsideBounds(int x, int y)
+{
+	return x >= 0 && x < rows&& y >= 0 && y < cols;
 }
