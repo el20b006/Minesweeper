@@ -35,5 +35,7 @@ void ShowHighscores();
 void ShowHelp();
 void ShowAbout();
 void PlaceMines();
-
+void ClickField(GtkWidget* widget, GdkEventButton* event, gpointer data);
+void FlagField(mineButton* mine, int bombsNearby);
+void DisplayButtonInfo(mineButton* mine, int bombsNearby);
 int isInsideBounds(int x, int y);
