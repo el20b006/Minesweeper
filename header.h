@@ -39,3 +39,6 @@ void ClickField(GtkWidget* widget, GdkEventButton* event, gpointer data);
 void FlagField(mineButton* mine, int bombsNearby);
 void DisplayButtonInfo(mineButton* mine, int bombsNearby);
 int isInsideBounds(int x, int y);
+void DisplayGameWon();
+void on_response(GtkDialog* dialog, gint response_id, gpointer data);
+void AddHighscore(char* name);
