@@ -1,6 +1,8 @@
 #include <gtk/gtk.h>
 #include "header.h"
 
+mineButton* helper;
+
 int main(int argc, char** argv)
 {
 	GtkWidget* window;
@@ -129,6 +131,7 @@ void CreateGrid()
 			mine->widget = button;
 			g_signal_connect(button, "button_press_event", G_CALLBACK(ClickField), mine);
 			gtk_grid_attach(GTK_GRID(grid), button, j, i, 1, 1);
+			helper = mine;
 		}
 	}
 
@@ -153,7 +156,9 @@ void DisplayStats() {
 }
 
 void RestartGame()
-{	
+{
+	free(helper);
+	
 	// reset stats
 	bombsFound = 0;
 	moves = 0;
@@ -259,7 +264,7 @@ void ShowAbout()
 	GtkWidget* dialogVbox = gtk_dialog_get_content_area(aboutDialog);
 
 	// create text
-	GtkWidget* text = gtk_label_new(""); // enter some text here
+	GtkWidget* text = gtk_label_new("Minesweeper\nVersion 1.0\nMade by Sarah Froeler\n07/21");
 	gtk_widget_show(text);
 	gtk_box_pack_start(GTK_BOX(dialogVbox), text, FALSE, FALSE, 10);
 
@@ -389,6 +394,7 @@ void DisplayButtonInfo(mineButton* mine, int bombsNearby)
 					neighborMine->x = mine->x + m;
 					neighborMine->y = mine->y + n;
 					DisplayButtonInfo(neighborMine, field[neighborMine->x][neighborMine->y]);
+					free(neighborMine);
 				}
 			}
 		}
@@ -508,3 +514,12 @@ void AddHighscore(char* name)
 		fclose(file);
 	}
 }
+
+
+/*
+* TODO / Issues:
+* 
+* Program probably only works on windows
+* Memory management is scuffed, there's at least one mem leak when opening adjacent fields due to the hacky button accessing
+* Some nice-to-have improvements (track time in addition to moves, sort highscores by moves/time)
+*/
