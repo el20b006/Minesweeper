@@ -1,11 +1,11 @@
 #include <gtk/gtk.h>
 #include "header.h"
 
-mineButton* helper;
+mineButton *helper;
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-	GtkWidget* window;
+	GtkWidget *window;
 
 	gtk_init(&argc, &argv);
 
@@ -35,15 +35,15 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void CreateMenu(GtkWidget* vbox)
+void CreateMenu(GtkWidget *vbox)
 {
-	GtkWidget* menubar;
-	GtkWidget* menu;
-	GtkWidget* menuItem;
+	GtkWidget *menubar;
+	GtkWidget *menu;
+	GtkWidget *menuItem;
 
-	GtkWidget* radioMenu;
-	GSList* group = NULL;
-	GtkWidget* radioItem;
+	GtkWidget *radioMenu;
+	GSList *group = NULL;
+	GtkWidget *radioItem;
 
 	menubar = gtk_menu_bar_new();
 
@@ -66,19 +66,19 @@ void CreateMenu(GtkWidget* vbox)
 
 	radioItem = gtk_radio_menu_item_new_with_label(group, "Easy");
 	group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(radioItem));
-	gtk_check_menu_item_set_active(GTK_RADIO_MENU_ITEM(radioItem), TRUE);
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(radioItem), TRUE);
 	gtk_menu_shell_append(GTK_MENU_SHELL(radioMenu), radioItem);
-	g_signal_connect(G_OBJECT(radioItem), "activate", G_CALLBACK(SetDifficulty), 0);
+	g_signal_connect(G_OBJECT(radioItem), "activate", G_CALLBACK(SetDifficulty), (gpointer)0);
 
 	radioItem = gtk_radio_menu_item_new_with_label(group, "Normal");
 	group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(radioItem));
 	gtk_menu_shell_append(GTK_MENU_SHELL(radioMenu), radioItem);
-	g_signal_connect(G_OBJECT(radioItem), "activate", G_CALLBACK(SetDifficulty), 1);
+	g_signal_connect(G_OBJECT(radioItem), "activate", G_CALLBACK(SetDifficulty), (gpointer)1);
 
 	radioItem = gtk_radio_menu_item_new_with_label(group, "Hard");
 	group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(radioItem));
 	gtk_menu_shell_append(GTK_MENU_SHELL(radioMenu), radioItem);
-	g_signal_connect(G_OBJECT(radioItem), "activate", G_CALLBACK(SetDifficulty), 2);
+	g_signal_connect(G_OBJECT(radioItem), "activate", G_CALLBACK(SetDifficulty), (gpointer)2);
 
 	menuItem = gtk_menu_item_new_with_label("Highscores");
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuItem);
@@ -108,12 +108,12 @@ void CreateMenu(GtkWidget* vbox)
 
 void CreateGrid()
 {
-	GtkWidget* button;
+	GtkWidget *button;
 
 	// destroy and recreate grid on restart
 	if (grid)
 	{
-		gtk_widget_destroy(grid);
+		gtk_widget_destroy(GTK_WIDGET(grid));
 	}
 
 	grid = gtk_grid_new();
@@ -123,7 +123,7 @@ void CreateGrid()
 	{
 		for (int j = 0; j < cols; j++)
 		{
-			mineButton* mine = malloc(sizeof(*mine));
+			mineButton *mine = malloc(sizeof(*mine));
 			mine->x = i;
 			mine->y = j;
 			mine->flagged = 0;
@@ -135,8 +135,8 @@ void CreateGrid()
 		}
 	}
 
-	gtk_widget_show_all(grid);
-	gtk_box_pack_start(GTK_BOX(vbox), grid, FALSE, FALSE, 0);
+	gtk_widget_show_all(GTK_WIDGET(grid));
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(grid), FALSE, FALSE, 0);
 
 	// display stats at the bottom
 	if (statsLabel)
@@ -149,10 +149,11 @@ void CreateGrid()
 	gtk_box_pack_start(GTK_BOX(vbox), statsLabel, FALSE, FALSE, 10);
 }
 
-void DisplayStats() {
+void DisplayStats() 
+{
 	char buffer[30];
 	sprintf_s(buffer, sizeof(buffer), "Bombs left: %d \nMoves: %d", flagsLeft, moves);
-	gtk_label_set_label(statsLabel, buffer);
+	gtk_label_set_label(GTK_LABEL(statsLabel), buffer);
 }
 
 void RestartGame()
@@ -201,15 +202,15 @@ void RestartGame()
 	DisplayStats();
 }
 
-void SetDifficulty(GtkWidget* widget, gpointer data)
+void SetDifficulty(GtkWidget *widget, gpointer data)
 {
-	difficulty = (int)data;
+	difficulty = (int)(*(int*)data);
 	RestartGame();
 }
 
 void ShowHighscores()
 {
-	FILE* file;
+	FILE *file;
 	errno_t err;
 	char buf[100]; // assuming that a single line is never more than 100 characters
 	char highscores[10000];
@@ -228,14 +229,14 @@ void ShowHighscores()
 	}
 
 	// create dialog
-	GtkWidget* highscoresDialog;
-	highscoresDialog = gtk_dialog_new_with_buttons("Highscores", vbox, GTK_DIALOG_MODAL, "Close", GTK_RESPONSE_CLOSE, NULL);
+	GtkWidget *highscoresDialog;
+	highscoresDialog = gtk_dialog_new_with_buttons("Highscores", GTK_WINDOW(vbox), GTK_DIALOG_MODAL, "Close", GTK_RESPONSE_CLOSE, NULL);
 
 	// get content area where widgets can be added
-	GtkWidget* dialogVbox = gtk_dialog_get_content_area(highscoresDialog);
+	GtkWidget *dialogVbox = gtk_dialog_get_content_area(GTK_DIALOG(highscoresDialog));
 
 	// create text
-	GtkWidget* text = gtk_label_new(highscores);
+	GtkWidget *text = gtk_label_new(highscores);
 	gtk_widget_show(text);
 	gtk_box_pack_start(GTK_BOX(dialogVbox), text, FALSE, FALSE, 10);
 
@@ -248,7 +249,7 @@ void ShowHelp()
 #ifdef _WIN32
 	system("explorer https://en.wikipedia.org/wiki/Minesweeper_(video_game)");
 #elif defined __unix__
-	system("xdg-open https://en.wikipedia.org/wiki/Minesweeper_(video_game)");
+	system("xdg-open 'https://en.wikipedia.org/wiki/Minesweeper_(video_game)'");
 #elif define __APPLE
 	system("open https://en.wikipedia.org/wiki/Minesweeper_(video_game)");
 #endif
@@ -257,14 +258,14 @@ void ShowHelp()
 void ShowAbout()
 {
 	// create dialog
-	GtkWidget* aboutDialog;
-	aboutDialog = gtk_dialog_new_with_buttons("About", vbox, GTK_DIALOG_MODAL, "Close", GTK_RESPONSE_CLOSE, NULL);
+	GtkWidget *aboutDialog;
+	aboutDialog = gtk_dialog_new_with_buttons("About", GTK_WINDOW(vbox), GTK_DIALOG_MODAL, "Close", GTK_RESPONSE_CLOSE, NULL);
 
 	// get content area where widgets can be added
-	GtkWidget* dialogVbox = gtk_dialog_get_content_area(aboutDialog);
+	GtkWidget *dialogVbox = gtk_dialog_get_content_area(GTK_DIALOG(aboutDialog));
 
 	// create text
-	GtkWidget* text = gtk_label_new("Minesweeper\nVersion 1.0\nMade by Sarah Froeler\n07/21");
+	GtkWidget *text = gtk_label_new("Minesweeper\nVersion 1.0\nMade by Sarah Froeler\n07/21");
 	gtk_widget_show(text);
 	gtk_box_pack_start(GTK_BOX(dialogVbox), text, FALSE, FALSE, 10);
 
@@ -301,9 +302,9 @@ void PlaceMines()
 	}
 }
 
-void ClickField(GtkWidget* widget, GdkEventButton* event, gpointer data)
+void ClickField(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-	mineButton* mine = (mineButton*)data;
+	mineButton *mine = (mineButton*)data;
 
 	if (event->type == GDK_BUTTON_PRESS && event->button == 3) // right mouse button
 	{
@@ -317,12 +318,12 @@ void ClickField(GtkWidget* widget, GdkEventButton* event, gpointer data)
 		}
 		else if (field[mine->x][mine->y] == -1) // clicked on a mine
 		{
-			GtkWidget* image = gtk_image_new_from_file("bomb.png");
-			gtk_button_set_image(mine->widget, image);
+			GtkWidget *image = gtk_image_new_from_file("bomb.png");
+			gtk_button_set_image(GTK_BUTTON(mine->widget), image);
 
-			gtk_widget_set_sensitive(grid, FALSE);
-			GtkWidget* loseDialog;
-			loseDialog = gtk_dialog_new_with_buttons("You lost!", vbox, GTK_DIALOG_MODAL, "Quit", 0, "Restart", 1, NULL);
+			gtk_widget_set_sensitive(GTK_WIDGET(grid), FALSE);
+			GtkWidget *loseDialog;
+			loseDialog = gtk_dialog_new_with_buttons("You lost!", GTK_WINDOW(vbox), GTK_DIALOG_MODAL, "Quit", 0, "Restart", 1, NULL);
 			g_signal_connect(GTK_DIALOG(loseDialog), "response", G_CALLBACK(on_response), NULL);
 			gtk_dialog_run(GTK_DIALOG(loseDialog));
 			gtk_widget_destroy(loseDialog);
@@ -337,13 +338,13 @@ void ClickField(GtkWidget* widget, GdkEventButton* event, gpointer data)
 	DisplayStats();
 }
 
-void FlagField(mineButton* mine, int bombsNearby)
+void FlagField(mineButton *mine, int bombsNearby)
 {
-	GtkWidget* image = gtk_image_new_from_file("flag.png");
+	GtkWidget *image = gtk_image_new_from_file("flag.png");
 
 	if (mine->flagged == 0 && flagsLeft > 0)	// place flag
 	{
-		gtk_button_set_image(mine->widget, image);
+		gtk_button_set_image(GTK_BUTTON(mine->widget), image);
 		mine->flagged = 1;
 		flagsLeft--;
 		moves++;
@@ -358,7 +359,7 @@ void FlagField(mineButton* mine, int bombsNearby)
 	}
 	else if (mine->flagged == 1)	// remove flag
 	{
-		gtk_button_set_image(mine->widget, NULL);
+		gtk_button_set_image(GTK_BUTTON(mine->widget), NULL);
 		mine->flagged = 0;
 		flagsLeft++;
 		moves++;
@@ -369,7 +370,7 @@ void FlagField(mineButton* mine, int bombsNearby)
 	}
 }
 
-void DisplayButtonInfo(mineButton* mine, int bombsNearby)
+void DisplayButtonInfo(mineButton *mine, int bombsNearby)
 {
 	// ignore already opened fields
 	if (!gtk_widget_get_sensitive(mine->widget))
@@ -387,9 +388,9 @@ void DisplayButtonInfo(mineButton* mine, int bombsNearby)
 			{
 				if (isInsideBounds(mine->x + m, mine->y + n) && field[mine->x + m][mine->y + n] != -1)
 				{
-					GtkWidget* buttonToUse;
-					buttonToUse = gtk_grid_get_child_at(grid, mine->y + n, mine->x + m);
-					mineButton* neighborMine = malloc(sizeof(*neighborMine));
+					GtkWidget *buttonToUse;
+					buttonToUse = gtk_grid_get_child_at(GTK_GRID(grid), mine->y + n, mine->x + m);
+					mineButton *neighborMine = malloc(sizeof(*neighborMine));
 					neighborMine->widget = buttonToUse;
 					neighborMine->x = mine->x + m;
 					neighborMine->y = mine->y + n;
@@ -401,7 +402,7 @@ void DisplayButtonInfo(mineButton* mine, int bombsNearby)
 	}
 	else // display number of nearby bombs
 	{
-		GtkWidget* image = gtk_image_new_from_file("1.png");
+		GtkWidget *image = gtk_image_new_from_file("1.png");
 		switch (bombsNearby)
 		{
 		case 1:
@@ -432,7 +433,7 @@ void DisplayButtonInfo(mineButton* mine, int bombsNearby)
 			// something went wrong
 			break;
 		}
-		gtk_button_set_image(mine->widget, image);
+		gtk_button_set_image(GTK_BUTTON(mine->widget), image);
 	}
 }
 
@@ -444,30 +445,31 @@ int isInsideBounds(int x, int y)
 void DisplayGameWon()
 {
 	// make grid non-interactive
-	gtk_widget_set_sensitive(grid, FALSE);
+	gtk_widget_set_sensitive(GTK_WIDGET(grid), FALSE);
 
 	// create dialog
-	GtkWidget* winDialog;
-	winDialog = gtk_dialog_new_with_buttons("You won!", vbox, GTK_DIALOG_MODAL, "Add to highscores", 2, NULL);
+	GtkWidget *winDialog;
+	winDialog = gtk_dialog_new_with_buttons("You won!", GTK_WINDOW(vbox), GTK_DIALOG_MODAL, "Add to highscores", 2, NULL);
 
 	// get content area where widgets can be added
-	GtkWidget* dialogVbox = gtk_dialog_get_content_area(winDialog);
+	GtkWidget *dialogVbox = gtk_dialog_get_content_area(GTK_DIALOG(winDialog));
 
 	// create text input widget and add to dialog
-	GtkWidget* input;
+	GtkWidget *input;
 	input = gtk_entry_new();
-	gtk_entry_set_text(input, "Enter your name");
+	gtk_entry_set_text(GTK_ENTRY(input), "Enter your name");
 	gtk_widget_show(input);
 	gtk_box_pack_start(GTK_BOX(dialogVbox), input, FALSE, FALSE, 0);
 
-	g_signal_connect(GTK_DIALOG(winDialog), "response", G_CALLBACK(on_response), gtk_entry_get_text(input));
+	gchar *pinput = (gchar*)gtk_entry_get_text(GTK_ENTRY(input));
+	g_signal_connect(GTK_DIALOG(winDialog), "response", G_CALLBACK(on_response), (gpointer) pinput);
 	gtk_dialog_run(GTK_DIALOG(winDialog));
 	gtk_widget_destroy(winDialog);
 }
 
-void on_response(GtkDialog* dialog, gint response_id, gpointer data) // deal with buttons on game won/lost windows
+void on_response(GtkDialog *dialog, gint response_id, gpointer data) // deal with buttons on game won/lost windows
 {
-	char* name = (char*)data;
+	char *name = (char*)data;
 	switch (response_id)
 	{
 	case 0:
@@ -484,9 +486,9 @@ void on_response(GtkDialog* dialog, gint response_id, gpointer data) // deal wit
 	}
 }
 
-void AddHighscore(char* name)
+void AddHighscore(char *name)
 {
-	char* difficultyText = "Easy";
+	char *difficultyText = "Easy";
 	switch (difficulty)
 	{
 	case 0:
@@ -502,7 +504,7 @@ void AddHighscore(char* name)
 		break;
 	}
 
-	FILE* file;
+	FILE *file;
 	errno_t err;
 	if (err = fopen_s(&file, ".mines", "a") != 0) // file is saved in program directory to avoid troubles with OS differences or permissions
 	{
@@ -518,8 +520,7 @@ void AddHighscore(char* name)
 
 /*
 * TODO / Issues:
-* 
-* Program probably only works on windows
+*
 * Memory management is scuffed, there's at least one mem leak when opening adjacent fields due to the hacky button accessing
 * Some nice-to-have improvements (track time in addition to moves, sort highscores by moves/time)
 */
